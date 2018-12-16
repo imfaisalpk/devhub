@@ -110,6 +110,7 @@ function GradientLayerOverlay(
 
 export function TransparentTextOverlay(props: TransparentTextOverlayProps) {
   const { children, containerStyle, from, ...otherProps } = props
+  return children
 
   return (
     <View
