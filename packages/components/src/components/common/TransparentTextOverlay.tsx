@@ -1,119 +1,35 @@
-import { rgba } from 'polished'
 import React, { ReactNode } from 'react'
-import { StyleProp, View, ViewStyle } from 'react-native'
+import { Animated, StyleProp, ViewStyle } from 'react-native'
 
-import { LinearGradient } from '../../libs/linear-gradient'
-import { computeThemeColor } from '../../utils/helpers/colors'
+import { ThemeColors } from '@devhub/core'
+import { useAnimatedTheme } from '../../hooks/use-animated-theme.shared'
+import { AnimatedGradientLayerOverlay } from './GradientLayerOverlay'
 
 export type From = 'top' | 'bottom' | 'left' | 'right'
 export type FromWithVH = 'vertical' | 'horizontal' | From
 
-export interface TransparentTextOverlayProps {
+export interface AnimatedTransparentTextOverlayProps {
+  animated?: boolean
   children?: ReactNode
-  color: string
-  containerStyle?: StyleProp<ViewStyle>
+  containerStyle?: StyleProp<ViewStyle | any>
   from: FromWithVH
   radius?: number
   size: number
   style?: StyleProp<ViewStyle>
+  themeColor: keyof ThemeColors
 }
 
-function getStyle(from: From, size: number): ViewStyle {
-  switch (from) {
-    case 'top':
-      return {
-        height: size,
-        left: 0,
-        position: 'absolute',
-        right: 0,
-        top: 0,
-      }
-    case 'bottom':
-      return {
-        bottom: 0,
-        height: size,
-        left: 0,
-        position: 'absolute',
-        right: 0,
-      }
-    case 'left':
-      return {
-        bottom: 0,
-        left: 0,
-        position: 'absolute',
-        top: 0,
-        width: size,
-      }
-    case 'right':
-      return {
-        bottom: 0,
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        width: size,
-      }
-    default:
-      return {}
-  }
-}
-
-function getProps(from: From, size: number) {
-  switch (from) {
-    case 'top':
-      return {
-        end: { x: 0, y: 0 },
-        height: size,
-        start: { x: 0, y: 1 },
-      }
-    case 'bottom':
-      return {
-        end: { x: 0, y: 1 },
-        height: size,
-        start: { x: 0, y: 0 },
-      }
-    case 'left':
-      return {
-        end: { x: 0, y: 0 },
-        start: { x: 1, y: 0 },
-        width: size,
-      }
-    default:
-      return {
-        end: { x: 1, y: 0 },
-        start: { x: 0, y: 0 },
-        width: size,
-      }
-  }
-}
-
-function GradientLayerOverlay(
-  props: TransparentTextOverlayProps & { from: From },
+export function AnimatedTransparentTextOverlay(
+  props: AnimatedTransparentTextOverlayProps,
 ) {
-  const { color: _color, from, radius, size, style, ...otherProps } = props
+  const theme = useAnimatedTheme()
 
-  const color = computeThemeColor(_color)
-  if (!color) return null
+  const { children, containerStyle, from, themeColor, ...otherProps } = props
 
-  return (
-    <LinearGradient
-      colors={[rgba(color, 0), color]}
-      style={[
-        getStyle(from, size),
-        Boolean(radius) && { borderRadius: radius },
-        style,
-      ]}
-      {...getProps(from, size)}
-      {...otherProps}
-    />
-  )
-}
-
-export function TransparentTextOverlay(props: TransparentTextOverlayProps) {
-  const { children, containerStyle, from, ...otherProps } = props
-  return children
+  const color = theme[themeColor]
 
   return (
-    <View
+    <Animated.View
       style={[
         { flex: 1, alignSelf: 'stretch', flexBasis: 'auto' },
         containerStyle,
@@ -122,20 +38,36 @@ export function TransparentTextOverlay(props: TransparentTextOverlayProps) {
       {children}
 
       {(from === 'vertical' || from === 'top') && (
-        <GradientLayerOverlay {...otherProps} from="top" />
+        <AnimatedGradientLayerOverlay
+          {...otherProps}
+          color={color}
+          from="top"
+        />
       )}
 
       {(from === 'vertical' || from === 'bottom') && (
-        <GradientLayerOverlay {...otherProps} from="bottom" />
+        <AnimatedGradientLayerOverlay
+          {...otherProps}
+          color={color}
+          from="bottom"
+        />
       )}
 
       {(from === 'horizontal' || from === 'left') && (
-        <GradientLayerOverlay {...otherProps} from="left" />
+        <AnimatedGradientLayerOverlay
+          {...otherProps}
+          color={color}
+          from="left"
+        />
       )}
 
       {(from === 'horizontal' || from === 'right') && (
-        <GradientLayerOverlay {...otherProps} from="right" />
+        <AnimatedGradientLayerOverlay
+          {...otherProps}
+          color={color}
+          from="right"
+        />
       )}
-    </View>
+    </Animated.View>
   )
 }
